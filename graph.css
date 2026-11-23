@@ -1,0 +1,34 @@
+/* Word Map extension — no third-party graph library required. */
+.graph-section{margin:26px 0 34px;background:#fff;border:1px solid #e0e6ed;border-radius:22px;padding:25px 25px 17px;box-shadow:0 16px 45px rgba(28,43,65,.045)}
+.graph-title-row{display:flex;justify-content:space-between;align-items:start;gap:15px}
+.graph-title-row h3{font-size:clamp(25px,3.2vw,35px);margin:8px 0 5px;letter-spacing:-.055em}
+.graph-spark{color:#d79442;font-size:.65em;vertical-align:top}
+.graph-caption{color:#738198;line-height:1.7;font-size:13px;margin:0}
+.map-reset{border:1px solid #dce3ed;border-radius:12px;background:#fff;padding:9px 13px;color:#54657e;font-size:12px;font-weight:750;white-space:nowrap}
+.map-reset:hover{background:#f0f4fb}
+.graph-filters{display:flex;gap:8px;flex-wrap:wrap;margin:19px 0 14px}
+.graph-filter{display:inline-flex;align-items:center;gap:7px;border:1px solid #dfe5ed;border-radius:50px;padding:9px 12px;font-size:12px;color:#344155;font-weight:720;cursor:pointer;user-select:none;background:white}
+.graph-filter:has(input:not(:checked)){color:#9ba5b2;background:#f8f9fa}
+.graph-filter input{accent-color:var(--group-color);margin:0;width:14px;height:14px}
+.filter-dot{display:block;width:9px;height:9px;border-radius:50%;background:var(--group-color)}
+.graph-filter:has(input:not(:checked)) .filter-dot{background:#c3cbd5}
+.graph-scroll{overflow-x:auto;overflow-y:hidden;border:1px solid #e7ebf2;background:radial-gradient(circle at 50% 50%,#f2f5fc 0,#fbfcff 58%,#f7f9fc 100%);border-radius:17px;scrollbar-color:#c3cada transparent}
+.graph-scroll svg{display:block;width:100%;min-width:900px;height:auto;min-height:0;touch-action:pan-x}
+.graph-scroll:focus-visible{outline:3px solid #799ee9;outline-offset:2px}
+.graph-bottom{min-height:54px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 4px 0}
+.graph-status{color:#738198;font-size:12px;overflow-wrap:anywhere}
+.graph-explore{border:0;background:#182b47;color:#fff;border-radius:12px;padding:11px 14px;font-size:12px;font-weight:800;white-space:nowrap}
+.graph-explore:disabled{opacity:.35;cursor:not-allowed}
+.graph-explore:not(:disabled):hover{background:#2a59c6}
+.graph-footnote{font-size:11px;line-height:1.7;color:#8793a3;margin:2px 4px 0}
+.graph-edge{fill:none;stroke-width:2;stroke-linecap:round;opacity:.49}
+.graph-root-edge{stroke-width:3;opacity:.4}
+.graph-leaf{cursor:pointer;outline:none}
+.graph-leaf rect{transition:fill .15s,stroke-width .15s}
+.graph-leaf:hover rect,.graph-leaf:focus rect{stroke-width:2.5;filter:drop-shadow(0 2px 5px rgba(30,51,80,.12))}
+.graph-leaf.is-selected rect{stroke-width:3;filter:drop-shadow(0 3px 8px rgba(30,51,80,.15))}
+.graph-leaf:focus-visible rect{stroke:#151d2c;stroke-width:3}
+@media(max-width:680px){.graph-section{padding:18px 12px 14px;margin:20px 0}.graph-title-row{padding:0 5px}.map-reset{padding:8px 9px}.graph-filters{gap:6px}.graph-filter{padding:7px 9px;font-size:11px}.graph-bottom{flex-wrap:wrap}.graph-explore{margin-left:auto}.graph-scroll svg{min-width:980px}}
+@media(prefers-reduced-motion:reduce){.graph-leaf rect{transition:none}}
+
+[hidden]{display:none!important}

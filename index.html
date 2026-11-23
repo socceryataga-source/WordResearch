@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#15243b">
+  <meta name="description" content="Explore synonyms, antonyms, word families, and corpus-related combinations for English vocabulary learning.">
+  <title>WORD EXPLORER | Connect the Words</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="graph.css">
+  <link rel="stylesheet" href="cloud.css">
+  <script src="word-families.js" defer></script>
+  <script src="app.js" defer></script>
+  <script src="graph.js" defer></script>
+  <script src="cloud.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="Word Explorer ホーム"><span class="brand-mark" aria-hidden="true">W<span class="dot">.</span></span><span>WORD EXPLORER</span></a>
+      <span class="edition">LEARN · CONNECT · REMEMBER</span>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="eyebrow"><span class="live-dot"></span> YOUR VOCABULARY, CONNECTED.</div>
+      <h1 id="hero-title">One word.<br><em>More connections.</em></h1>
+      <p class="hero-copy">英単語を入力して、類義語・反意語・派生語・よく使われる組み合わせを見つけよう。</p>
+      <form id="search-form" class="search-form" autocomplete="off">
+        <label class="sr-only" for="word-input">Search an English word</label>
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+          <input id="word-input" name="word" type="search" placeholder="Type a word..." aria-describedby="search-hint" maxlength="45" autocapitalize="none" spellcheck="false" autofocus>
+          <button class="search-button" type="submit">EXPLORE <span aria-hidden="true">↗</span></button>
+        </div>
+        <p id="search-hint" class="hint">Try: <button type="button" data-example="important">important</button><span>·</span><button type="button" data-example="create">create</button><span>·</span><button type="button" data-example="decision">decision</button></p>
+      </form>
+    </section>
+
+    <section id="message-panel" class="message-panel" aria-live="polite" hidden></section>
+
+    <section id="results" class="results" hidden aria-label="Search results">
+      <div class="result-heading">
+        <div><span class="result-overline">EXPLORING</span><h2 id="result-word"></h2><div class="word-meta"><span id="phonetic"></span><span id="parts-of-speech"></span></div></div>
+        <button id="reset-button" class="subtle-button" type="button">New search ↗</button>
+      </div>
+      <div id="definition-panel" class="definition-panel" hidden><div class="section-kicker">MEANING IN ENGLISH</div><div id="definitions"></div></div>
+      <section class="visual-section" aria-labelledby="visual-heading">
+        <div class="visual-header">
+          <div><div class="section-kicker">EXPLORE THE CONNECTIONS</div><h3 id="visual-heading">Words around <em id="visual-word">your word</em></h3><p class="visual-intro">検索するたびに、新しいワードクラウドを表示。気になる語句をクリックするとコピーできます。</p></div>
+          <div class="visual-switch" role="group" aria-label="語彙の表示形式">
+            <button type="button" id="view-cloud" class="view-button is-active" aria-pressed="true">☁ Word Cloud</button>
+            <button type="button" id="view-map" class="view-button" aria-pressed="false">⌘ Word Map</button>
+          </div>
+        </div>
+        <div id="cloud-panel" class="cloud-panel">
+          <div id="cloud-scroll" class="cloud-scroll" tabindex="0" aria-label="ワードクラウド。小さな画面では横スクロールできます。">
+            <svg id="word-cloud" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 550" role="group" aria-label="単語のワードクラウド"></svg>
+          </div>
+          <div class="cloud-bottom"><span id="cloud-status" role="status" aria-live="polite">Click a word to copy it.</span><span class="cloud-hint">BLUE Synonyms · RED Antonyms · GREEN Family · ORANGE Partners</span></div>
+          <p class="cloud-note">文字の大きさは候補の表示順位を目安にしたもので、語の使用頻度や類義性の強さを厳密に表すものではありません。語の意味は教科書の文脈で確認してください。</p>
+        </div>
+      </section>
+      <div id="map-panel" hidden>
+      <section class="graph-section" aria-labelledby="graph-heading">
+        <div class="graph-title-row">
+          <div><div class="section-kicker">VISUAL WORD CONNECTIONS</div><h3 id="graph-heading">Word Map <span class="graph-spark">✳</span></h3><p class="graph-caption">単語のつながりを一目で。語をクリックするとコピー、選択後の「Explore」で再検索できます。スマホでは左右にスクロール。</p></div>
+          <button type="button" id="graph-reset" class="map-reset">Reset view ↺</button>
+        </div>
+        <div class="graph-filters" role="group" aria-label="表示する語彙グループ">
+          <label class="graph-filter" style="--group-color:#4776e6"><input type="checkbox" data-graph-group="synonyms" checked> <span class="filter-dot"></span>Synonyms</label>
+          <label class="graph-filter" style="--group-color:#db6672"><input type="checkbox" data-graph-group="antonyms" checked> <span class="filter-dot"></span>Antonyms</label>
+          <label class="graph-filter" style="--group-color:#399b79"><input type="checkbox" data-graph-group="family" checked> <span class="filter-dot"></span>Word Family</label>
+          <label class="graph-filter" style="--group-color:#d79442"><input type="checkbox" data-graph-group="collocations" checked> <span class="filter-dot"></span>Word Partners</label>
+        </div>
+        <div class="graph-scroll" id="graph-scroll" tabindex="0" aria-label="単語の関係図。スマートフォンでは左右にスクロールして全体を確認できます。">
+          <svg id="word-graph" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 720" role="img" aria-label="英単語の関係図" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="graph-bottom"><span id="graph-status" class="graph-status" aria-live="polite">Select a word to copy it.</span><button id="graph-explore" type="button" class="graph-explore" disabled>Explore selected word ↗</button></div>
+        <p class="graph-footnote">最大20候補を図示しています。線は語句の分類を表すもので、意味の完全な一致やコーパス上の関連度の強さを示すものではありません。</p>
+      </section>
+      </div>
+      <div class="results-grid">
+        <article class="result-card"><div class="card-top"><span class="card-num">01</span><span class="card-icon">≈</span></div><h3>Synonyms</h3><p class="card-subtitle">類義語 — 近い意味を持つ語</p><div id="synonyms" class="chips"></div><p class="card-note">本文の意味と合う語を選ぼう。</p></article>
+        <article class="result-card"><div class="card-top"><span class="card-num">02</span><span class="card-icon">↔</span></div><h3>Antonyms</h3><p class="card-subtitle">反意語 — 反対の意味を持つ語</p><div id="antonyms" class="chips"></div><p class="card-note">反対語が存在しない単語もあります。</p></article>
+        <article class="result-card"><div class="card-top"><span class="card-num">03</span><span class="card-icon">✳</span></div><h3>Word Family</h3><p class="card-subtitle">派生語 — 同じ語根を持つ語</p><div id="families" class="chips"></div><p class="card-note">確認済みの語形グループのみ表示します。</p></article>
+        <article class="result-card"><div class="card-top"><span class="card-num">04</span><span class="card-icon">⛓</span></div><h3>Word Partners</h3><p class="card-subtitle">共起表現 — 近くに現れやすい語</p><div id="collocations" class="chips"></div><p class="card-note">統計的な候補です。自然な表現か文脈で確認しよう。</p></article>
+      </div>
+      <div id="data-notice" class="data-notice" role="status"></div>
+      <div class="bottom-actions"><button id="copy-all" class="copy-button" type="button">Copy results <span>↗</span></button><a href="https://skell.sketchengine.eu/#home?lang=en" rel="noopener noreferrer" target="_blank" class="external-link">Explore examples on SKELL <span aria-hidden="true">↗</span></a></div>
+    </section>
+
+    <section id="initial-tip" class="initial-tip"><span class="tip-number">01 / 03</span><div><h2>Find. Compare. Choose.</h2><p>表示された語を全部書き写す必要はありません。教科書本文の意味とつながる語を、自分で2〜3個選んでみよう。</p></div><div class="tip-decoration" aria-hidden="true">↗</div></section>
+
+    <footer class="footer"><span>WORD EXPLORER</span><span>Data: Free Dictionary API + Datamuse · <a href="about.html">About / ご利用上の注意</a></span></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
