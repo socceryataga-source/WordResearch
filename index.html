@@ -9,7 +9,9 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="graph.css">
   <link rel="stylesheet" href="cloud.css">
+  <link rel="stylesheet" href="updates.css">
   <script src="word-families.js" defer></script>
+  <script src="difficulty.js" defer></script>
   <script src="app.js" defer></script>
   <script src="graph.js" defer></script>
   <script src="cloud.js" defer></script>
@@ -25,6 +27,16 @@
       <div class="eyebrow"><span class="live-dot"></span> YOUR VOCABULARY, CONNECTED.</div>
       <h1 id="hero-title">One word.<br><em>More connections.</em></h1>
       <p class="hero-copy">英単語を入力して、類義語・反意語・派生語・よく使われる組み合わせを見つけよう。</p>
+      <div class="mode-switch" role="group" aria-label="検索モード">
+        <button type="button" id="mode-single" class="mode-button is-active" aria-pressed="true">Single Word</button>
+        <button type="button" id="mode-bulk" class="mode-button" aria-pressed="false">Bulk Search · 一括検索</button>
+      </div>
+      <div id="bulk-controls" class="bulk-controls" hidden>
+        <label for="bulk-input">Googleスプレッドシートの1列をコピーして貼り付け（最大20語）</label>
+        <textarea id="bulk-input" rows="6" spellcheck="false" placeholder="important&#10;create&#10;develop&#10;protect"></textarea>
+        <div class="bulk-help">改行区切りで読み取ります。重複は自動で除き、検索結果は1語ずつ表示します。</div>
+        <button type="button" id="bulk-start" class="bulk-start">EXPLORE WORD LIST ↗</button>
+      </div>
       <form id="search-form" class="search-form" autocomplete="off">
         <label class="sr-only" for="word-input">Search an English word</label>
         <div class="search-wrap">
@@ -38,6 +50,13 @@
 
     <section id="message-panel" class="message-panel" aria-live="polite" hidden></section>
 
+    <section id="batch-nav" class="batch-nav" hidden aria-label="一括検索の語句切り替え">
+      <div class="batch-bar"><button id="batch-prev" type="button" class="batch-arrow" aria-label="前の単語">← Previous</button>
+      <div class="batch-count"><span id="batch-progress">1 / 1</span><strong id="batch-current"></strong></div>
+      <button id="batch-next" type="button" class="batch-arrow" aria-label="次の単語">Next →</button></div>
+      <div id="batch-list" class="batch-list"></div>
+      <button id="batch-clear" class="batch-clear" type="button">Change word list ↺</button>
+    </section>
     <section id="results" class="results" hidden aria-label="Search results">
       <div class="result-heading">
         <div><span class="result-overline">EXPLORING</span><h2 id="result-word"></h2><div class="word-meta"><span id="phonetic"></span><span id="parts-of-speech"></span></div></div>
@@ -46,7 +65,7 @@
       <div id="definition-panel" class="definition-panel" hidden><div class="section-kicker">MEANING IN ENGLISH</div><div id="definitions"></div></div>
       <section class="visual-section" aria-labelledby="visual-heading">
         <div class="visual-header">
-          <div><div class="section-kicker">EXPLORE THE CONNECTIONS</div><h3 id="visual-heading">Words around <em id="visual-word">your word</em></h3><p class="visual-intro">検索するたびに、新しいワードクラウドを表示。気になる語句をクリックするとコピーできます。</p></div>
+          <div><div class="section-kicker">EXPLORE THE CONNECTIONS</div><h3 id="visual-heading">Words around <em id="visual-word">your word</em></h3><p class="visual-intro">検索するたびに新しいワードクラウドを表示。中心に近い語ほど基本的な語になるよう推定して並べています。</p></div>
           <div class="visual-switch" role="group" aria-label="語彙の表示形式">
             <button type="button" id="view-cloud" class="view-button is-active" aria-pressed="true">☁ Word Cloud</button>
             <button type="button" id="view-map" class="view-button" aria-pressed="false">⌘ Word Map</button>
@@ -57,7 +76,7 @@
             <svg id="word-cloud" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 550" role="group" aria-label="単語のワードクラウド"></svg>
           </div>
           <div class="cloud-bottom"><span id="cloud-status" role="status" aria-live="polite">Click a word to copy it.</span><span class="cloud-hint">BLUE Synonyms · RED Antonyms · GREEN Family · ORANGE Partners</span></div>
-          <p class="cloud-note">文字の大きさは候補の表示順位を目安にしたもので、語の使用頻度や類義性の強さを厳密に表すものではありません。語の意味は教科書の文脈で確認してください。</p>
+          <p class="cloud-note">語の配置・大きさは学習難易度の目安です。英検の公式級別認定ではありません。コーパスの頻度とも一致しません。</p>
         </div>
       </section>
       <div id="map-panel" hidden>
@@ -76,7 +95,7 @@
           <svg id="word-graph" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 720" role="img" aria-label="英単語の関係図" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
         <div class="graph-bottom"><span id="graph-status" class="graph-status" aria-live="polite">Select a word to copy it.</span><button id="graph-explore" type="button" class="graph-explore" disabled>Explore selected word ↗</button></div>
-        <p class="graph-footnote">最大20候補を図示しています。線は語句の分類を表すもので、意味の完全な一致やコーパス上の関連度の強さを示すものではありません。</p>
+        <p class="graph-footnote">各カテゴリ最大3語。中心に近いものから易しい順（推定）に並びます。英検3級を起点とした学習上の目安であり、公式な級別分類ではありません。</p>
       </section>
       </div>
       <div class="results-grid">
@@ -91,7 +110,7 @@
 
     <section id="initial-tip" class="initial-tip"><span class="tip-number">01 / 03</span><div><h2>Find. Compare. Choose.</h2><p>表示された語を全部書き写す必要はありません。教科書本文の意味とつながる語を、自分で2〜3個選んでみよう。</p></div><div class="tip-decoration" aria-hidden="true">↗</div></section>
 
-    <footer class="footer"><span>WORD EXPLORER</span><span>Data: Free Dictionary API + Datamuse · <a href="about.html">About / ご利用上の注意</a></span></footer>
+    <footer class="footer"><span>WORD EXPLORER</span><span>Data: Free Dictionary API + Datamuse · Difficulty: approximate · <a href="about.html">About / ご利用上の注意</a></span></footer>
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>

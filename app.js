@@ -18,7 +18,10 @@
   let seq = 0;
   let toastTimer;
   const pauseMs = 900;
-  const maxChips = 9;
+  const maxChips = 3;
+  const rank = window.WordDifficulty;
+  const MAX_BULK = 20;
+  const batch = {words:[], index:0};
   const stopwords = new Set('the a an this that these those your his her its their our my and or but of for to in on at by with from as is are was were be been being has have had do does did can will would should it he she they we you i not no more most very much many so such than then some any all one two three who which what when where while'.split(' '));
   const cleanWord = w => (w || '').toLowerCase().trim().replace(/\s+/g, ' ');
   const isValid = w => /^[a-z][a-z' -]{0,44}$/i.test(w) && !/\s{2}/.test(w);
@@ -72,10 +75,15 @@
     try {const r=await fetch(url,{signal:controller.signal,headers:{'Accept':'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json();}
     finally {clearTimeout(timeout);}
   }
-  const dm=(param,word,max=18)=>getJson(`https://api.datamuse.com/words?${param}=${encodeURIComponent(word)}&max=${max}`);
+  const dm=(param,word,max=18)=>getJson(`https://api.datamuse.com/words?${param}=${encodeURIComponent(word)}&max=${max}&md=f`);
   const fd=word=>getJson(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
   const list=(settled)=>settled.status==='fulfilled'&&Array.isArray(settled.value)?settled.value:[];
   const words=(settled)=>list(settled).map(item=>item.word);
+  const frequencies=(settled)=>new Map(list(settled).map(item=>[String(item.word||'').toLowerCase(),Number((item.tags||[]).find(tag=>tag.startsWith('f:'))?.slice(2))||0]));
+  function prioritized(values,target,frequencyMap,limit=3,isPhrase=false) {
+    const candidates=unique(values,target,40).map(word=>({word,frequency:frequencyMap.get(word)??-1}));
+    return rank.order(candidates,isPhrase).slice(0,limit).map(item=>item.word);
+  }
   async function retrieve(word) {
     if(cache.has(word)) return cache.get(word);
     const keys=['dictionary','syn','ant','meaning','before','after','adjectives','nouns'];
@@ -99,10 +107,11 @@
         }
       }
     }
-    const synonyms=unique([...synDict,...words(data.syn)],word);
-    const antonyms=unique([...antDict,...words(data.ant)],word);
-    const family=unique((familyIndex.get(word)||[]),word,15);
-    const collocations=buildCollocations(word,parts,words(data.before),words(data.after),words(data.adjectives),words(data.nouns));
+    const synonyms=prioritized([...synDict,...words(data.syn)],word,frequencies(data.syn));
+    const antonyms=prioritized([...antDict,...words(data.ant)],word,frequencies(data.ant));
+    const family=prioritized((familyIndex.get(word)||[]),word,new Map());
+    const corpusPhrases=buildCollocations(word,parts,words(data.before),words(data.after),words(data.adjectives),words(data.nouns));
+    const collocations=prioritized(corpusPhrases,'',new Map(),3,true);
     const value={word,phonetic,parts,meanings,synonyms,antonyms,family,collocations,successful,datamuseOk:out.slice(1).some(x=>x.status==='fulfilled'),dictionaryOk:out[0].status==='fulfilled'};
     if(successful>0)cache.set(word,value);
     return value;
@@ -120,13 +129,31 @@
     const notices=[];
     if(!data.datamuseOk) notices.push('コーパス関連の検索サービスに接続できませんでした。');
     if(!data.dictionaryOk) notices.push('辞書の語義データは取得できませんでした。');
-    notices.push('候補は必ずしも本文の意味に一致しません。とくにSimilar Wordsは同義語とは限りません。');
+    notices.push('易しい順の並びは参考推定です（英検公式級別の判定ではありません）。本文の意味と一致するか必ず確認してください。');
     $('data-notice').textContent=notices.join(' ');
     results.hidden=false;tip.hidden=true;
     current=data;
     document.dispatchEvent(new CustomEvent('wordexplorer:render',{detail:data}));
   }
-  async function search(raw) {
+  function updateBatchNav() {
+    const nav=$('batch-nav');
+    nav.hidden=!batch.words.length;
+    if(!batch.words.length)return;
+    $('batch-progress').textContent=`${batch.index+1} / ${batch.words.length}`;
+    $('batch-current').textContent=batch.words[batch.index];
+    $('batch-prev').disabled=batch.index===0;
+    $('batch-next').disabled=batch.index===batch.words.length-1;
+    $('batch-list').replaceChildren();
+    batch.words.forEach((word,i)=>{
+      const btn=document.createElement('button');btn.type='button';btn.className='batch-pill'+(i===batch.index?' is-current':'');
+      btn.textContent=`${i+1}. ${word}`;btn.setAttribute('aria-current',i===batch.index?'true':'false');
+      btn.addEventListener('click',()=>goBatch(i));$('batch-list').append(btn);
+    });
+  }
+  function goBatch(i) {if(i<0||i>=batch.words.length)return;batch.index=i;updateBatchNav();search(batch.words[i],true);}
+  function clearBatch() {batch.words=[];batch.index=0;updateBatchNav();}
+  async function search(raw, fromBatch=false) {
+    if(!fromBatch && batch.words.length)clearBatch();
     clearTimeout(timer);
     const word=cleanWord(raw);
     if(!word) {showMessage('英単語を入力してください。','error');return;}
@@ -148,13 +175,33 @@
     const url=new URL(location.href);url.searchParams.set('word',word);history.replaceState(null,'',url);
   }
   form.addEventListener('submit', e=>{e.preventDefault();search(input.value);});
+  const modeSingle=$('mode-single'),modeBulk=$('mode-bulk');
+  function switchMode(mode){
+    const bulk=mode==='bulk';
+    $('bulk-controls').hidden=!bulk; $('search-form').hidden=bulk;
+    modeBulk.classList.toggle('is-active',bulk);modeSingle.classList.toggle('is-active',!bulk);
+    modeBulk.setAttribute('aria-pressed',String(bulk));modeSingle.setAttribute('aria-pressed',String(!bulk));
+  }
+  modeSingle.addEventListener('click',()=>switchMode('single'));modeBulk.addEventListener('click',()=>switchMode('bulk'));
+  const parseBatch=str=>[...new Set(str.split(/[\r\n\t,;]+/).map(cleanWord).filter(Boolean))];
+  $('bulk-start').addEventListener('click',()=>{
+    const items=parseBatch($('bulk-input').value);
+    if(!items.length){showMessage('単語を貼り付けてください。','error');return;}
+    if(items.length>MAX_BULK){showMessage(`一度に検索できるのは最大${MAX_BULK}語です。`,`error`);return;}
+    const invalid=items.find(w=>!isValid(w)||w.includes(' '));
+    if(invalid){showMessage(`「${invalid}」を確認してください。1行につき英単語1語を入力してください。`,'error');return;}
+    batch.words=items;batch.index=0;updateBatchNav();goBatch(0);
+  });
+  $('batch-prev').addEventListener('click',()=>goBatch(batch.index-1));
+  $('batch-next').addEventListener('click',()=>goBatch(batch.index+1));
+  $('batch-clear').addEventListener('click',()=>{clearBatch();switchMode('bulk');});
   input.addEventListener('input',()=>{
     clearTimeout(timer); const word=cleanWord(input.value);
-    if(!word)return;
+    if(!word || batch.words.length)return;
     if(isValid(word) && word.length>=2)timer=setTimeout(()=>search(word),pauseMs);
   });
   document.querySelectorAll('[data-example]').forEach(btn=>btn.addEventListener('click',()=>search(btn.dataset.example)));
-  $('reset-button').addEventListener('click',()=>{seq++;clearTimeout(timer);results.hidden=true;message.hidden=true;tip.hidden=false;current=null;document.dispatchEvent(new Event('wordexplorer:reset'));input.value='';input.focus();const url=new URL(location.href);url.searchParams.delete('word');history.replaceState(null,'',url);});
+  $('reset-button').addEventListener('click',()=>{clearBatch();switchMode('single');seq++;clearTimeout(timer);results.hidden=true;message.hidden=true;tip.hidden=false;current=null;document.dispatchEvent(new Event('wordexplorer:reset'));input.value='';input.focus();const url=new URL(location.href);url.searchParams.delete('word');history.replaceState(null,'',url);});
   $('copy-all').addEventListener('click',()=>{
     if(!current)return;
     const d=current;

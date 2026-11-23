@@ -1,0 +1,20 @@
+/* Bulk search and classroom improvements */
+.mode-switch{display:flex;gap:7px;margin:20px 0 14px;flex-wrap:wrap}
+.mode-button{border:1px solid #dbe3ee;border-radius:12px;padding:12px 18px;background:#fff;color:#64748b;font-weight:800;cursor:pointer;font-size:13px}
+.mode-button.is-active{background:#172b47;color:#fff;border-color:#172b47}
+.bulk-controls{background:#fff;border:1px solid #dce5ef;border-radius:17px;padding:18px;margin-bottom:18px}
+.bulk-controls label{display:block;font-size:13px;font-weight:800;margin-bottom:9px;color:#243957}
+.bulk-controls textarea{display:block;width:100%;min-height:140px;box-sizing:border-box;border:1px solid #ccd7e7;border-radius:12px;padding:13px;font-size:16px;line-height:1.55;resize:vertical;background:#fafdff;color:#182b47}
+.bulk-help{font-size:12px;line-height:1.6;color:#718096;margin:9px 0 14px}
+.bulk-start{background:#172b47;color:#fff;border:0;border-radius:11px;padding:13px 18px;cursor:pointer;font-size:13px;font-weight:800}
+.batch-nav{background:#fff;border:1px solid #dce5ef;border-radius:19px;padding:17px;margin:22px 0 4px}
+.batch-bar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.batch-arrow{border:1px solid #d6e0ed;background:#f8faff;color:#253d60;border-radius:11px;padding:12px 14px;font-weight:800;cursor:pointer}
+.batch-arrow:disabled{opacity:.35;cursor:not-allowed}
+.batch-count{display:flex;flex-direction:column;align-items:center;gap:4px;color:#627590;font-size:12px}
+.batch-count strong{color:#172b47;font-size:clamp(18px,3vw,26px);overflow-wrap:anywhere;text-align:center}
+.batch-list{display:flex;gap:7px;overflow:auto;padding:15px 0 8px}
+.batch-pill{white-space:nowrap;border:1px solid #d8e1ee;background:white;color:#496078;border-radius:50px;padding:8px 12px;font-size:12px;cursor:pointer}
+.batch-pill.is-current{background:#e9f0ff;border-color:#577fe6;color:#2448af;font-weight:800}
+.batch-clear{border:0;background:transparent;padding:7px 0;color:#536b8a;text-decoration:underline;font-size:12px;cursor:pointer}
+@media(max-width:600px){.batch-arrow{padding:10px 7px;font-size:11px}.batch-nav{padding:13px}.mode-button{flex:1;padding:11px 8px}.batch-count strong{font-size:18px}}

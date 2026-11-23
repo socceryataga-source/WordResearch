@@ -59,11 +59,11 @@
     const boxes=[{x:CX-rw/2-23,y:CY-rootSize/2-23,w:rw+46,h:rootSize+46}];
     // Interleave categories to keep the first placements balanced.
     const arranged=[];
-    for(let j=0;j<7;j++)for(const cfg of configs){
+    for(let j=0;j<3;j++)for(const cfg of configs){
       const w=(dataset[cfg.key]||[])[j];
       if(w && w.toLowerCase()!==root.toLowerCase())arranged.push({word:w,rank:j,cfg});
     }
-    // Place larger, shorter, high-ranked suggestions closer to the central word.
+    // Closer / larger labels represent approximate learner familiarity; not official Eiken grades.
     let placed=0;
     for(let i=0;i<arranged.length;i++){
       const item=arranged[i];
@@ -92,7 +92,7 @@
     }
     addText(root,'Search word','#17273e',rootSize,800,CX,CY,true);
     svg.setAttribute('aria-label',`${root} の関連語ワードクラウド。${placed}個の候補。クリックでコピー。`);
-    document.getElementById('cloud-status').textContent=`${placed} connected words · Click a word to copy.`;
+    document.getElementById('cloud-status').textContent=`${placed} connected words · Closer = approximately easier · Click to copy.`;
   }
   function switchView(view){
     currentView=view;

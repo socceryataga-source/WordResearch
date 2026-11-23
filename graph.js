@@ -6,10 +6,10 @@
   const svg = $('word-graph');
   if (!svg) return;
   const configurations = [
-    {key:'synonyms', label:'Synonyms', ja:'類義語', color:'#4776e6', pale:'#edf3ff', hub:[285,245], leafXs:[112,285,458], ys:[78,155]},
-    {key:'antonyms', label:'Antonyms', ja:'反意語', color:'#db6672', pale:'#fff0f1', hub:[865,245], leafXs:[692,865,1038], ys:[78,155]},
-    {key:'family', label:'Word Family', ja:'派生語', color:'#399b79', pale:'#e9f8f1', hub:[285,475], leafXs:[112,285,458], ys:[570,649]},
-    {key:'collocations', label:'Word Partners', ja:'共起表現', color:'#d79442', pale:'#fff3e4', hub:[865,475], leafXs:[692,865,1038], ys:[570,649]}
+    {key:'synonyms', label:'Synonyms', ja:'類義語', color:'#4776e6', pale:'#edf3ff', hub:[395,254], leafXs:[340,222,104], ys:[179,118,62]},
+    {key:'antonyms', label:'Antonyms', ja:'反意語', color:'#db6672', pale:'#fff0f1', hub:[755,254], leafXs:[810,928,1046], ys:[179,118,62]},
+    {key:'family', label:'Word Family', ja:'派生語', color:'#399b79', pale:'#e9f8f1', hub:[395,466], leafXs:[340,222,104], ys:[541,602,658]},
+    {key:'collocations', label:'Word Partners', ja:'共起表現', color:'#d79442', pale:'#fff3e4', hub:[755,466], leafXs:[810,928,1046], ys:[541,602,658]}
   ];
   let current = null;
   let selection = null;
@@ -62,12 +62,12 @@
       edges.append(line(575,360,hx,hy,cat.color,true));
       const hub=wrapNode(hx,hy,174,68,cat.color,cat.pale,cat.label,cat.ja,'graph-hub');
       nodes.append(hub);
-      const entries=(current[cat.key]||[]).slice(0,5);
+      const entries=(current[cat.key]||[]).slice(0,3);
       for(let i=0;i<entries.length;i++){
-        const x=cat.leafXs[i%3],y=cat.ys[Math.floor(i/3)];
+        const x=cat.leafXs[i],y=cat.ys[i];
         const label=entries[i];
         edges.append(line(hx,hy,x,y,cat.color));
-        const g=wrapNode(x,y,158,49,cat.color,'#fff',label,'','graph-leaf');
+        const g=wrapNode(x,y,190,49,cat.color,'#fff',label,'','graph-leaf');
         g.setAttribute('role','button');g.setAttribute('tabindex','0');
         g.setAttribute('aria-label',`${label} (${cat.label}): 選択してコピー`);
         const act=()=>select(label,cat.label,g);
@@ -83,7 +83,7 @@
     nodes.append(root);
     svg.replaceChildren(edges,nodes);
     svg.setAttribute('aria-label',`${current.word}を中心とした単語の関係図。${count}候補。クリックするとコピーできます。`);
-    status(`${count} words on the map · Click a word to copy.`);
+    status(`${count} words · Near center ≈ easier; farther ≈ more advanced (estimated) · Click to copy.`);
   }
   document.addEventListener('wordexplorer:render',e=>{
     const d=e.detail;
